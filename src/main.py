@@ -1,4 +1,5 @@
 import flet as ft
+from database import Database
 
 
 def main(page: ft.Page):
@@ -6,6 +7,11 @@ def main(page: ft.Page):
     # data - свойство объекта page, которое может хранить любые данные
     # которые будут использоваться в любом месте прилижения, работает как глобальная переменная
     page.data = 0  # счетчик задач
+
+    # создаем экземпляр класса Database
+    db = Database("db.sqlite3")
+    # создаем таблицы
+    db.create_tables()
 
     # функция, которая будет вызываться при нажатии на кнопку "Добавить"
     def add_todo(e):
@@ -35,13 +41,14 @@ def main(page: ft.Page):
     todo_count_text = ft.Text(value=f"Всего {page.data} задач(а)", size=28)
     # это место, куда будут добавляться задачи в виде Text
     todo_list_area = ft.Column()
+    # создаем форму в виде строки и добавляем в нее поля и кнопку
+    form_area = ft.Row(controls=[task_input, category_input, add_button])
+    title.value = "Приложение для списка дел"
 
     # добавляем элементы на страницу, порядок важен
     page.add(
         title,
-        task_input,
-        category_input,
-        add_button,
+        form_area,
         todo_count_text,
         todo_list_area,
     )  # от того, в каком порядке они тут добавляются, зависит в каком порядке они отображаются
