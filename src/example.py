@@ -7,7 +7,6 @@ def function_name(a, b, c):
 function_name(a=1, c=3, b=2)
 
 
-
 class Column:
     def __init__(self):
         self.controls = []
@@ -15,3 +14,7 @@ class Column:
 
 todo_list_area = Column()
 todo_list_area.controls.append()
+
+
+def concatinate(a: str, b):
+    pass

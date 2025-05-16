@@ -1,4 +1,5 @@
 import flet as ft
+
 from database import Database
 
 
@@ -13,17 +14,31 @@ def main(page: ft.Page):
     # создаем таблицы
     db.create_tables()
 
+    todos = db.all_todos()
+    print(todos)
+
     # функция, которая будет вызываться при нажатии на кнопку "Добавить"
     def add_todo(e):
-        # создаем строку с задачей
-        todo = f"{task_input.value}, категория: {category_input.value}"
-        print(todo)
-        # добавляем задачу в список
-        # так как Column может в себя вмещать другие элементы, свойство controls как раз служит списком элементов, добавляемых в Column
-        todo_list_area.controls.append(ft.Text(value=todo, size=30))
+        # Добавляем задачу в БД
+        db.add_todo(task=task_input.value, category=category_input.value)
 
-        # тут увеличиваем счетчик количества задач
-        page.data += 1
+        # очищаем Column
+        todo_list_area.controls.clear()
+        # получаем все задачи из БД
+        todos = db.all_todos()
+        for todo in todos:
+            # проходим по списку задач и добавляем каждую в todo_list_area
+            # так как Column может в себя вмещать другие элементы, свойство controls как раз служит списком элементов, добавляемых в Column
+            todo_list_area.controls.append(
+                ft.Row(
+                    controls=[
+                        ft.Text(value=f"Задача: {todo[1]}", size=30),
+                        ft.Text(value=f"Категория: {todo[2]}", size=30),
+                    ]
+                )
+            )
+            # тут увеличиваем счетчик количества задач
+            page.data += 1
 
         # очищаем поля
         task_input.value = ""
