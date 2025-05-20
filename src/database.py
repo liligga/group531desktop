@@ -73,8 +73,9 @@ class Database:
         """
         pass
 
-    def delete_todo(self):
+    def delete_todo(self, todo_id):
         """
         Метод, в котором вызывается запрос для удаления задачи
         """
-        pass
+        with sqlite3.connect(self.path) as conn:
+            conn.execute("DELETE FROM todos WHERE id=(?)", (todo_id,))

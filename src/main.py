@@ -5,6 +5,7 @@ from database import Database
 
 def main(page: ft.Page):
     page.title = "Приложение для списка дел"
+    page.window.width = 1024
     # data - свойство объекта page, которое может хранить любые данные
     # которые будут использоваться в любом месте прилижения, работает как глобальная переменная
     # page.data = 0  # счетчик задач
@@ -25,9 +26,22 @@ def main(page: ft.Page):
             rows.append(
                 ft.Row(
                     controls=[
+                        ft.Text(value=todo[0]),
                         ft.Text(value=f"Задача: {todo[1]}", size=30),
                         ft.Text(
                             value=f"Категория: {todo[2]}", size=30, color=ft.Colors.BLUE
+                        ),
+                        ft.IconButton(
+                            icon=ft.Icons.EDIT,
+                            icon_color=ft.Colors.GREEN,
+                            icon_size=20,
+                        ),
+                        ft.IconButton(
+                            icon=ft.Icons.DELETE,
+                            icon_color=ft.Colors.RED,
+                            icon_size=20,
+                            on_click=delete_todo,
+                            data=todo[0],
                         ),
                     ]
                 )
@@ -50,7 +64,8 @@ def main(page: ft.Page):
         page.update()  # эта строка обязательна
 
     def delete_todo(e):
-        db.delete_todo()
+        print(f"В delete_todo нажали на todo с id={e.control.data}")
+        db.delete_todo(todo_id=e.control.data)
         todo_list_area.controls = get_rows()
         todo_count_text.value = f"Всего {db.count_todos()} задач(а)"
         page.update()
