@@ -1,6 +1,9 @@
 import sqlite3
 
 
+# CRUD - Create, Read, Update, Delete
+
+
 class Database:
     """
     Класс для работы с БД. тут будут методы для создания таблиц,
@@ -23,6 +26,16 @@ class Database:
                     category TEXT
                 )
             """)
+
+    def count_todos(self):
+        """
+        Метод, в котором вызывается запрос для получения количества задач из БД
+        """
+        with sqlite3.connect(self.path) as conn:
+            cursor = conn.cursor()
+            result = cursor.execute("SELECT COUNT(*) FROM todos")
+            # (0)
+            return result.fetchone()[0]
 
     def all_todos(self):
         """

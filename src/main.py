@@ -7,7 +7,7 @@ def main(page: ft.Page):
     page.title = "Приложение для списка дел"
     # data - свойство объекта page, которое может хранить любые данные
     # которые будут использоваться в любом месте прилижения, работает как глобальная переменная
-    page.data = 0  # счетчик задач
+    # page.data = 0  # счетчик задач
 
     # создаем экземпляр класса Database
     db = Database("db.sqlite3")
@@ -17,45 +17,54 @@ def main(page: ft.Page):
     todos = db.all_todos()
     print(todos)
 
+    def get_rows() -> list[ft.Row]:
+        rows = []
+        for todo in db.all_todos():
+            # проходим по списку задач и добавляем каждую в todo_list_area
+            # так как Column может в себя вмещать другие элементы, свойство controls как раз служит списком элементов, добавляемых в Column
+            rows.append(
+                ft.Row(
+                    controls=[
+                        ft.Text(value=f"Задача: {todo[1]}", size=30),
+                        ft.Text(
+                            value=f"Категория: {todo[2]}", size=30, color=ft.Colors.BLUE
+                        ),
+                    ]
+                )
+            )
+        return rows
+
     # функция, которая будет вызываться при нажатии на кнопку "Добавить"
     def add_todo(e):
         # Добавляем задачу в БД
         db.add_todo(task=task_input.value, category=category_input.value)
 
-        # очищаем Column
-        todo_list_area.controls.clear()
-        # получаем все задачи из БД
-        todos = db.all_todos()
-        for todo in todos:
-            # проходим по списку задач и добавляем каждую в todo_list_area
-            # так как Column может в себя вмещать другие элементы, свойство controls как раз служит списком элементов, добавляемых в Column
-            todo_list_area.controls.append(
-                ft.Row(
-                    controls=[
-                        ft.Text(value=f"Задача: {todo[1]}", size=30),
-                        ft.Text(value=f"Категория: {todo[2]}", size=30),
-                    ]
-                )
-            )
-            # тут увеличиваем счетчик количества задач
-            page.data += 1
+        todo_list_area.controls = get_rows()
 
         # очищаем поля
         task_input.value = ""
         category_input.value = ""
-        todo_count_text.value = f"Всего {page.data} задач(а)"
+        todo_count_text.value = f"Всего {db.count_todos()} задач(а)"
 
         # обновляем страницу, чтобы отобразить изменения
         page.update()  # эта строка обязательна
+
+    def delete_todo(e):
+        db.delete_todo()
+        todo_list_area.controls = get_rows()
+        todo_count_text.value = f"Всего {db.count_todos()} задач(а)"
+        page.update()
 
     # создаем элементы интерфейса
     title = ft.Text(value="Список дел", size=33)
     task_input = ft.TextField(label="Введите задачу")
     category_input = ft.TextField(label="Введите категорию")
     add_button = ft.ElevatedButton("Добавить", on_click=add_todo)
-    todo_count_text = ft.Text(value=f"Всего {page.data} задач(а)", size=28)
+    todo_count_text = ft.Text(
+        value=f"Всего {db.count_todos()} задач(а)", size=28, color=ft.Colors.PINK
+    )
     # это место, куда будут добавляться задачи в виде Text
-    todo_list_area = ft.Column()
+    todo_list_area = ft.Column(controls=get_rows(), scroll="auto", expand=True)
     # создаем форму в виде строки и добавляем в нее поля и кнопку
     form_area = ft.Row(controls=[task_input, category_input, add_button])
     title.value = "Приложение для списка дел"
