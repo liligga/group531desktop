@@ -47,6 +47,16 @@ class Database:
             result = cursor.execute("SELECT * FROM todos")
             return result.fetchall()
 
+    def get_todo(self, todo_id):
+        """
+        Метод, в котором вызывается запрос для получения конкретной задачи из БД
+        """
+        with sqlite3.connect(self.path) as conn:
+            cursor = conn.cursor()
+            result = cursor.execute("SELECT * FROM todos WHERE id=(?)", (todo_id,))
+            # (1, 'cook meal', 'home')
+            return result.fetchone()
+
     def add_todo(self, task: str, category: str):
         """
         Метод, в котором вызывается запрос для добавления в БД новой задачи
@@ -67,11 +77,18 @@ class Database:
             # )
             conn.commit()
 
-    def update_todo(self):
+    def update_todo(self, todo_id: int, task: str, category: str):
         """
         Метод, в котором вызывается запрос для обновления задачи
         """
-        pass
+        with sqlite3.connect(self.path) as conn:
+            conn.execute(
+                """
+                UPDATE todos SET task = ?, category = ? WHERE
+                id = ?
+                """,
+                (task, category, todo_id),
+            )
 
     def delete_todo(self, todo_id):
         """

@@ -8,7 +8,7 @@ def main(page: ft.Page):
     page.window.width = 1024
     # data - свойство объекта page, которое может хранить любые данные
     # которые будут использоваться в любом месте прилижения, работает как глобальная переменная
-    # page.data = 0  # счетчик задач
+    page.data = 0  # id задачи
 
     # создаем экземпляр класса Database
     db = Database("db.sqlite3")
@@ -26,15 +26,17 @@ def main(page: ft.Page):
             rows.append(
                 ft.Row(
                     controls=[
-                        ft.Text(value=todo[0]),
+                        ft.Text(value=todo[0], size=30),
                         ft.Text(value=f"Задача: {todo[1]}", size=30),
                         ft.Text(
                             value=f"Категория: {todo[2]}", size=30, color=ft.Colors.BLUE
                         ),
                         ft.IconButton(
-                            icon=ft.Icons.EDIT,
+                            icon=ft.Icons.EDIT_NOTE,
                             icon_color=ft.Colors.GREEN,
                             icon_size=20,
+                            on_click=open_edit_modal,
+                            data=todo[0],
                         ),
                         ft.IconButton(
                             icon=ft.Icons.DELETE,
@@ -70,6 +72,29 @@ def main(page: ft.Page):
         todo_count_text.value = f"Всего {db.count_todos()} задач(а)"
         page.update()
 
+    def open_edit_modal(e):
+        print(f"В open_edit_modal нажали на todo с id={e.control.data}")
+        page.data = e.control.data
+        todo = db.get_todo(todo_id=e.control.data)
+        task_input.value = todo[1]
+        category_input.value = todo[2]
+        page.open(edit_modal)
+
+    def close_edit_modal(e):
+        page.close(edit_modal)
+
+    def update_todo(e):
+        db.update_todo(
+            todo_id=page.data,
+            task=task_input.value,
+            category=category_input.value,
+        )
+        todo_list_area.controls = get_rows()
+        page.close(edit_modal)
+        task_input.value = ""
+        category_input.value = ""
+        page.update()
+
     # создаем элементы интерфейса
     title = ft.Text(value="Список дел", size=33)
     task_input = ft.TextField(label="Введите задачу")
@@ -83,6 +108,27 @@ def main(page: ft.Page):
     # создаем форму в виде строки и добавляем в нее поля и кнопку
     form_area = ft.Row(controls=[task_input, category_input, add_button])
     title.value = "Приложение для списка дел"
+
+    edit_modal = ft.AlertDialog(
+        modal=True,
+        title=ft.Text("Хотите изменить задачу?"),
+        # текстовые поля для редактирования задачи
+        content=ft.Column(
+            controls=[
+                task_input,
+                category_input,
+            ]
+        ),
+        actions=[
+            ft.ElevatedButton(
+                "Сохранить",
+                on_click=update_todo,
+                bgcolor=ft.Colors.BLUE,
+                color=ft.Colors.WHITE,
+            ),
+            ft.ElevatedButton("Отменить", on_click=close_edit_modal),
+        ],
+    )
 
     # добавляем элементы на страницу, порядок важен
     page.add(
