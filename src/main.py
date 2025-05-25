@@ -15,14 +15,14 @@ def main(page: ft.Page):
     # создаем таблицы
     db.create_tables()
 
-    todos = db.all_todos()
-    print(todos)
-
     def get_rows() -> list[ft.Row]:
+        """
+        Функция возвращает список Row, которые будут отображаться в todo_list_area
+        """
         rows = []
         for todo in db.all_todos():
             # проходим по списку задач и добавляем каждую в todo_list_area
-            # так как Column может в себя вмещать другие элементы, свойство controls как раз служит списком элементов, добавляемых в Column
+            # так как Column/Row может в себя вмещать другие элементы, свойство controls как раз служит списком элементов, добавляемых в Column/Row
             rows.append(
                 ft.Row(
                     controls=[
@@ -50,11 +50,14 @@ def main(page: ft.Page):
             )
         return rows
 
-    # функция, которая будет вызываться при нажатии на кнопку "Добавить"
     def add_todo(e):
+        """
+        Функция, которая будет вызываться при нажатии на кнопку 'Добавить'
+        """
         # Добавляем задачу в БД
         db.add_todo(task=task_input.value, category=category_input.value)
 
+        # обновляем список задач
         todo_list_area.controls = get_rows()
 
         # очищаем поля
@@ -66,36 +69,75 @@ def main(page: ft.Page):
         page.update()  # эта строка обязательна
 
     def delete_todo(e):
+        """
+        Функция, которая будет вызываться при нажатии на кнопку 'Удалить'
+        """
         print(f"В delete_todo нажали на todo с id={e.control.data}")
+
+        # удаляем задачу из БД
         db.delete_todo(todo_id=e.control.data)
+
+        # обновляем список задач
         todo_list_area.controls = get_rows()
+
+        # обновляем количество задач
         todo_count_text.value = f"Всего {db.count_todos()} задач(а)"
+
+        # обновляем страницу
         page.update()
 
     def open_edit_modal(e):
+        """
+        Функция, которая будет вызываться при нажатии на кнопку 'Редактировать'
+        и открывать модальное окно
+        """
         print(f"В open_edit_modal нажали на todo с id={e.control.data}")
+
+        # запоминаем id задачи
         page.data = e.control.data
+        # получаем задачу из БД
         todo = db.get_todo(todo_id=e.control.data)
+
+        # заполняем поля данными из БД
         task_input.value = todo[1]
         category_input.value = todo[2]
+
+        # открываем модальное окно
         page.open(edit_modal)
 
     def close_edit_modal(e):
+        """
+        Функция, которая будет вызываться при нажатии на кнопку 'Отменить'
+        и закрывать модальное окно
+        """
         page.close(edit_modal)
 
     def update_todo(e):
+        """
+        Функция, которая будет вызываться при нажатии на кнопку 'Сохранить'
+        в модальном окне и сохранять изменения в БД
+        """
+        # сохраняем изменения в БД
         db.update_todo(
             todo_id=page.data,
             task=task_input.value,
             category=category_input.value,
         )
+
+        # обновляем список задач
         todo_list_area.controls = get_rows()
+
+        # закрываем модальное окно
         page.close(edit_modal)
+
+        # очищаем поля
         task_input.value = ""
         category_input.value = ""
+
+        # обновляем страницу
         page.update()
 
-    # создаем элементы интерфейса
+    ##### создаем элементы интерфейса приложения #####
     title = ft.Text(value="Список дел", size=33)
     task_input = ft.TextField(label="Введите задачу")
     category_input = ft.TextField(label="Введите категорию")
@@ -109,6 +151,7 @@ def main(page: ft.Page):
     form_area = ft.Row(controls=[task_input, category_input, add_button])
     title.value = "Приложение для списка дел"
 
+    # создаем модальное окно
     edit_modal = ft.AlertDialog(
         modal=True,
         title=ft.Text("Хотите изменить задачу?"),
@@ -119,6 +162,7 @@ def main(page: ft.Page):
                 category_input,
             ]
         ),
+        # кнопки
         actions=[
             ft.ElevatedButton(
                 "Сохранить",
@@ -129,6 +173,7 @@ def main(page: ft.Page):
             ft.ElevatedButton("Отменить", on_click=close_edit_modal),
         ],
     )
+    ################################################
 
     # добавляем элементы на страницу, порядок важен
     page.add(
